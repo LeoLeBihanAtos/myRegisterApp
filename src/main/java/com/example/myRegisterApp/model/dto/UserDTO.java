@@ -4,6 +4,7 @@ import com.example.myRegisterApp.annotation.FrenchPhoneNumber;
 import com.example.myRegisterApp.annotation.ValidGender;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ import jakarta.validation.constraints.Past;
 public class UserDTO {
 
     @NotBlank(message = "Username is required")
+    @Size(min = 2, max = 20, message = "Username must be between 2 and 20 characters")
     private String username;
 
     @Past(message = "Birthdate must be in the past")

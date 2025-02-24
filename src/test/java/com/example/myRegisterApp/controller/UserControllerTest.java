@@ -1,7 +1,7 @@
 package com.example.myRegisterApp.controller;
 
-import com.example.myRegisterApp.model.User;
 import com.example.myRegisterApp.model.dto.UserDTO;
+import com.example.myRegisterApp.model.dto.UserResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @ExtendWith(MockitoExtension.class)
 public class UserControllerTest {
 
@@ -35,7 +34,7 @@ public class UserControllerTest {
 
     private MockMvc mockMvc;
 
-    private ObjectMapper objectMapper = JsonMapper.builder()
+    private final ObjectMapper objectMapper = JsonMapper.builder()
             .findAndAddModules()
             .build();
 
@@ -47,9 +46,9 @@ public class UserControllerTest {
     @Test
     public void testRegisterUser_Success() throws Exception {
         UserDTO userDTO = new UserDTO("Alice", LocalDate.of(2000, 1, 1), "France", "+33606060606", "Female");
-        User user = new User(1L, "Alice", LocalDate.of(2000, 1, 1), "France", "+33606060606", "Female");
+        UserResponseDTO userResponseDTO = new UserResponseDTO(1L, "Alice", LocalDate.of(2000, 1, 1), "France", "+33606060606", "Female");
 
-        when(userService.registerUser(any(User.class))).thenReturn(user);
+        when(userService.registerUser(any(UserDTO.class))).thenReturn(userResponseDTO);
 
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,9 +59,9 @@ public class UserControllerTest {
 
     @Test
     public void testGetUserById_UserExists() throws Exception {
-        User user = new User(1L, "Alice", LocalDate.of(2000, 1, 1), "France", "+33606060606", "Female");
+        UserResponseDTO userResponseDTO = new UserResponseDTO(1L, "Alice", LocalDate.of(2000, 1, 1), "France", "+33606060606", "Female");
 
-        when(userService.getUserById(1L)).thenReturn(Optional.of(user));
+        when(userService.getUserById(1L)).thenReturn(Optional.of(userResponseDTO));
 
         mockMvc.perform(get("/api/users/1"))
                 .andExpect(status().isOk())

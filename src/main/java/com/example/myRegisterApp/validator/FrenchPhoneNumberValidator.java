@@ -1,4 +1,4 @@
-package com.example.myRegisterApp.config;
+package com.example.myRegisterApp.validator;
 
 import com.example.myRegisterApp.annotation.FrenchPhoneNumber;
 import jakarta.validation.ConstraintValidator;

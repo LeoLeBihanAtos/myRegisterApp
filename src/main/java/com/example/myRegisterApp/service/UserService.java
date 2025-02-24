@@ -1,6 +1,9 @@
 package com.example.myRegisterApp.service;
 
+import com.example.myRegisterApp.mapper.UserMapper;
 import com.example.myRegisterApp.model.User;
+import com.example.myRegisterApp.model.dto.UserDTO;
+import com.example.myRegisterApp.model.dto.UserResponseDTO;
 import com.example.myRegisterApp.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,22 +22,18 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User registerUser(User user) {
+    public UserResponseDTO registerUser(UserDTO userDTO) {
+        User user = UserMapper.toEntity(userDTO);
         validateUser(user);
-        return userRepository.save(user);
+        return UserMapper.toResponseDTO(userRepository.save(user));
     }
 
 
 
-    public Optional<User> getUserById(Long id) {
+    public Optional<UserResponseDTO> getUserById(Long id) {
         logger.info("Recherche de l'utilisateur avec l'ID : {}", id);
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            logger.info("Utilisateur trouvé : {}", user.get().getUsername());
-        } else {
-            logger.warn("Utilisateur avec l'ID {} non trouvé", id);
-        }
-        return user;
+        return user.map(UserMapper::toResponseDTO);
     }
 
     private void validateUser(User user) {

@@ -1,6 +1,5 @@
 package com.example.myRegisterApp.validator;
 
-import com.example.myRegisterApp.config.FrenchPhoneNumberValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

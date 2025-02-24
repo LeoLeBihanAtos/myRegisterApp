@@ -1,6 +1,6 @@
 package com.example.myRegisterApp.annotation;
 
-import com.example.myRegisterApp.config.GenderValidator;
+import com.example.myRegisterApp.validator.GenderValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
