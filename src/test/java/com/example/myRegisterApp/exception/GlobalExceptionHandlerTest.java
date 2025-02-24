@@ -7,8 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -16,7 +14,6 @@ import com.example.myRegisterApp.service.UserService;
 
 import java.util.NoSuchElementException;
 
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,12 +41,13 @@ public class GlobalExceptionHandlerTest {
     public void testHandleIllegalArgumentException_ShouldReturn400() throws Exception {
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\n" +
-                                "    \"birthdate\": \"2000-01-01\",\n" +
-                                "    \"countryOfResidence\": \"France\",\n" +
-                                "    \"phoneNumber\": \"+33606060606\",\n" +
-                                "    \"gender\": \"Male\"\n" +
-                                "}   "))
+                        .content("""
+                                {
+                                    "birthdate": "2000-01-01",
+                                    "countryOfResidence": "France",
+                                    "phoneNumber": "+33606060606",
+                                    "gender": "Male"
+                                }  \s"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.username").value("Username is required"));
 
