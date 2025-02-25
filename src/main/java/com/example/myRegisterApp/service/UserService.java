@@ -1,5 +1,9 @@
 package com.example.myRegisterApp.service;
 
+import com.example.myRegisterApp.exception.BirthdateInFutureException;
+import com.example.myRegisterApp.exception.NonFrenchResidentException;
+import com.example.myRegisterApp.exception.UnderageUserException;
+import com.example.myRegisterApp.exception.UsernameAlreadyExistsException;
 import com.example.myRegisterApp.mapper.UserMapper;
 import com.example.myRegisterApp.model.User;
 import com.example.myRegisterApp.model.dto.UserDTO;
@@ -7,7 +11,6 @@ import com.example.myRegisterApp.model.dto.UserResponseDTO;
 import com.example.myRegisterApp.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,8 +22,14 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
+    private final MessageExceptionService messageExceptionService;
+
+    public UserService(UserRepository userRepository, MessageExceptionService messageExceptionService) {
+        this.userRepository = userRepository;
+        this.messageExceptionService = messageExceptionService;
+    }
 
     public UserResponseDTO registerUser(UserDTO userDTO) {
         User user = UserMapper.toEntity(userDTO);
@@ -31,7 +40,7 @@ public class UserService {
 
 
     public Optional<UserResponseDTO> getUserById(Long id) {
-        logger.info("Recherche de l'utilisateur avec l'ID : {}", id);
+        logger.info("User ID search : {}", id);
         Optional<User> user = userRepository.findById(id);
         return user.map(UserMapper::toResponseDTO);
     }
@@ -39,13 +48,16 @@ public class UserService {
     private void validateUser(User user) {
         int age = Period.between(user.getBirthdate(), LocalDate.now()).getYears();
         if (user.getBirthdate().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("La date de naissance doit être dans le passé");
+            throw new BirthdateInFutureException(this.messageExceptionService.getErrorMessage("birthdate.past"));
         }
         if (age < 18) {
-            throw new IllegalArgumentException("L'utilisateur doit être majeur (18+ ans)");
+            throw new UnderageUserException(this.messageExceptionService.getErrorMessage("user.age.underage"));
         }
         if (!"France".equalsIgnoreCase(user.getCountryOfResidence())) {
-            throw new IllegalArgumentException("Seuls les résidents français peuvent s'inscrire");
+            throw new NonFrenchResidentException(this.messageExceptionService.getErrorMessage("user.residence.onlyfrench"));
+        }
+        if (userRepository.existsByUsername(user.getUsername())) {
+                throw new UsernameAlreadyExistsException(this.messageExceptionService.getErrorMessage("user.username.existing"));
         }
     }
 }

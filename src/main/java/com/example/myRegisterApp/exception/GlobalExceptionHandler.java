@@ -56,7 +56,13 @@ public class GlobalExceptionHandler {
 
         logger.error("Erreur serveur : {}", ex.getMessage());
 
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus status = switch (ex) {
+            case BirthdateInFutureException _, UnderageUserException _ -> HttpStatus.BAD_REQUEST;
+            case NonFrenchResidentException _ -> HttpStatus.FORBIDDEN;
+            case UsernameAlreadyExistsException _ -> HttpStatus.CONFLICT;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+        return new ResponseEntity<>(error, status);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

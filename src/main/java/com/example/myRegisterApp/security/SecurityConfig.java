@@ -19,6 +19,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/{id}").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().denyAll()
 
                 ).csrf(AbstractHttpConfigurer::disable);

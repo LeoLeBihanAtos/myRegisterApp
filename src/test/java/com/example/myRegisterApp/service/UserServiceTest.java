@@ -1,5 +1,9 @@
 package com.example.myRegisterApp.service;
 
+import com.example.myRegisterApp.exception.BirthdateInFutureException;
+import com.example.myRegisterApp.exception.NonFrenchResidentException;
+import com.example.myRegisterApp.exception.UnderageUserException;
+import com.example.myRegisterApp.exception.UsernameAlreadyExistsException;
 import com.example.myRegisterApp.model.User;
 import com.example.myRegisterApp.model.dto.UserDTO;
 import com.example.myRegisterApp.model.dto.UserResponseDTO;
@@ -25,9 +29,19 @@ public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private MessageExceptionService messageExceptionService;
 
     private UserDTO validUserDTO;
     private User validUser;
+
+
+    private static final String BIRTHDATE_PAST_ERROR_MESSAGE = "The birthdate must be in the past";
+    private static final String UNDERAGE_ERROR_MESSAGE = "User must be of legal age (18+ years)";
+    private static final String RESIDENCE_ONLY_FRENCH_ERROR_MESSAGE = "Only French residents can register";
+    private static final String USERNAME_EXISTING_ERROR_MESSAGE = "This username already exists";
+
+
 
 
     @BeforeEach
@@ -40,7 +54,6 @@ public class UserServiceTest {
     @Test
     public void testRegisterUser_WithValidData_ShouldSaveUser() {
         when(userRepository.save(any(User.class))).thenReturn(validUser);
-
         UserResponseDTO userResponseDTO = userService.registerUser(validUserDTO);
 
         assertNotNull(userResponseDTO);
@@ -51,18 +64,20 @@ public class UserServiceTest {
     public void testRegisterUser_Under18_ShouldThrowException() {
         UserDTO minorUserDTO = new UserDTO("Bob", LocalDate.now().minusYears(16), "France", "0606060606", "Male");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.registerUser(minorUserDTO));
+        when(messageExceptionService.getErrorMessage("user.age.underage")).thenReturn(UNDERAGE_ERROR_MESSAGE);
 
-        assertEquals("L'utilisateur doit être majeur (18+ ans)", exception.getMessage());
+        UnderageUserException exception = assertThrows(UnderageUserException.class, () -> userService.registerUser(minorUserDTO));
+        assertEquals(UNDERAGE_ERROR_MESSAGE, exception.getMessage());
     }
 
     @Test
     public void testRegisterUser_NonFrenchResident_ShouldThrowException() {
-        UserDTO nonFrenchUserDTO = new UserDTO("Charlie", LocalDate.of(1990, 1, 1), "USA", "0606060606", "Male");
+        UserDTO nonFrenchUserDTO = new UserDTO("Eve", LocalDate.now().minusYears(20), "Italie", "0606060606", "Female");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.registerUser(nonFrenchUserDTO));
+        when(messageExceptionService.getErrorMessage("user.residence.onlyfrench")).thenReturn(RESIDENCE_ONLY_FRENCH_ERROR_MESSAGE);
 
-        assertEquals("Seuls les résidents français peuvent s'inscrire", exception.getMessage());
+        NonFrenchResidentException exception = assertThrows(NonFrenchResidentException.class, () -> userService.registerUser(nonFrenchUserDTO));
+        assertEquals(RESIDENCE_ONLY_FRENCH_ERROR_MESSAGE, exception.getMessage());
     }
 
 
@@ -70,9 +85,22 @@ public class UserServiceTest {
     public void testRegisterUser_FutureBirthdate_ShouldThrowException() {
         UserDTO invalidUserDTO = new UserDTO("Eve", LocalDate.now().plusYears(5), "France", "0606060606", "Female");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.registerUser(invalidUserDTO));
+        when(messageExceptionService.getErrorMessage("birthdate.past")).thenReturn(BIRTHDATE_PAST_ERROR_MESSAGE);
 
-        assertEquals("La date de naissance doit être dans le passé", exception.getMessage());
+        BirthdateInFutureException exception = assertThrows(BirthdateInFutureException.class, () -> userService.registerUser(invalidUserDTO));
+        assertEquals(BIRTHDATE_PAST_ERROR_MESSAGE, exception.getMessage());
+    }
+
+    @Test
+    public void testRegisterUser_UsernameAlreadyExist_ShouldThrowException() {
+        UserDTO invalidUserDTO = new UserDTO("Eve", LocalDate.now().minusYears(20), "France", "0606060606", "Female");
+
+        when(userRepository.existsByUsername(invalidUserDTO.getUsername())).thenReturn(true);
+        when(messageExceptionService.getErrorMessage("user.username.existing")).thenReturn(USERNAME_EXISTING_ERROR_MESSAGE);
+
+
+        UsernameAlreadyExistsException exception = assertThrows(UsernameAlreadyExistsException.class, () -> userService.registerUser(invalidUserDTO));
+        assertEquals(USERNAME_EXISTING_ERROR_MESSAGE, exception.getMessage());
     }
 
 
