@@ -1,4 +1,4 @@
-FROM maven:3.9.9-eclipse-temurin:23-jdk AS build
+FROM maven:3.9.9-eclipse-temurin AS build
 
 COPY . /app
 
