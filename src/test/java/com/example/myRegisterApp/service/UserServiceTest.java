@@ -1,6 +1,12 @@
 package com.example.myRegisterApp.service;
 
+import com.example.myRegisterApp.exception.BirthdateInFutureException;
+import com.example.myRegisterApp.exception.NonFrenchResidentException;
+import com.example.myRegisterApp.exception.UnderageUserException;
+import com.example.myRegisterApp.exception.UsernameAlreadyExistsException;
 import com.example.myRegisterApp.model.User;
+import com.example.myRegisterApp.model.dto.UserDTO;
+import com.example.myRegisterApp.model.dto.UserResponseDTO;
 import com.example.myRegisterApp.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -16,7 +21,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
@@ -25,50 +29,78 @@ public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private MessageExceptionService messageExceptionService;
 
+    private UserDTO validUserDTO;
     private User validUser;
+
+
+    private static final String BIRTHDATE_PAST_ERROR_MESSAGE = "The birthdate must be in the past";
+    private static final String UNDERAGE_ERROR_MESSAGE = "User must be of legal age (18+ years)";
+    private static final String RESIDENCE_ONLY_FRENCH_ERROR_MESSAGE = "Only French residents can register";
+    private static final String USERNAME_EXISTING_ERROR_MESSAGE = "This username already exists";
+
+
+
 
     @BeforeEach
     void setUp() {
+        validUserDTO = new UserDTO("Alice", LocalDate.of(2000, 1, 1), "France", "0606060606", "Female");
         validUser = new User(null, "Alice", LocalDate.of(2000, 1, 1), "France", "0606060606", "Female");
+
     }
 
     @Test
     public void testRegisterUser_WithValidData_ShouldSaveUser() {
         when(userRepository.save(any(User.class))).thenReturn(validUser);
+        UserResponseDTO userResponseDTO = userService.registerUser(validUserDTO);
 
-        User registeredUser = userService.registerUser(validUser);
-
-        assertNotNull(registeredUser);
-        assertEquals("Alice", registeredUser.getUsername());
+        assertNotNull(userResponseDTO);
+        assertEquals("Alice", userResponseDTO.getUsername());
     }
 
     @Test
     public void testRegisterUser_Under18_ShouldThrowException() {
-        User minorUser = new User(null, "Bob", LocalDate.now().minusYears(16), "France", "0606060606", "Male");
+        UserDTO minorUserDTO = new UserDTO("Bob", LocalDate.now().minusYears(16), "France", "0606060606", "Male");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.registerUser(minorUser));
+        when(messageExceptionService.getErrorMessage("user.age.underage")).thenReturn(UNDERAGE_ERROR_MESSAGE);
 
-        assertEquals("L'utilisateur doit être majeur (18+ ans)", exception.getMessage());
+        UnderageUserException exception = assertThrows(UnderageUserException.class, () -> userService.registerUser(minorUserDTO));
+        assertEquals(UNDERAGE_ERROR_MESSAGE, exception.getMessage());
     }
 
     @Test
     public void testRegisterUser_NonFrenchResident_ShouldThrowException() {
-        User nonFrenchUser = new User(null, "Charlie", LocalDate.of(1990, 1, 1), "USA", "0606060606", "Male");
+        UserDTO nonFrenchUserDTO = new UserDTO("Eve", LocalDate.now().minusYears(20), "Italie", "0606060606", "Female");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.registerUser(nonFrenchUser));
+        when(messageExceptionService.getErrorMessage("user.residence.onlyfrench")).thenReturn(RESIDENCE_ONLY_FRENCH_ERROR_MESSAGE);
 
-        assertEquals("Seuls les résidents français peuvent s'inscrire", exception.getMessage());
+        NonFrenchResidentException exception = assertThrows(NonFrenchResidentException.class, () -> userService.registerUser(nonFrenchUserDTO));
+        assertEquals(RESIDENCE_ONLY_FRENCH_ERROR_MESSAGE, exception.getMessage());
     }
 
 
     @Test
     public void testRegisterUser_FutureBirthdate_ShouldThrowException() {
-        User invalidUser = new User(null, "Eve", LocalDate.now().plusYears(5), "France", "0606060606", "Female");
+        UserDTO invalidUserDTO = new UserDTO("Eve", LocalDate.now().plusYears(5), "France", "0606060606", "Female");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.registerUser(invalidUser));
+        when(messageExceptionService.getErrorMessage("birthdate.past")).thenReturn(BIRTHDATE_PAST_ERROR_MESSAGE);
 
-        assertEquals("La date de naissance doit être dans le passé", exception.getMessage());
+        BirthdateInFutureException exception = assertThrows(BirthdateInFutureException.class, () -> userService.registerUser(invalidUserDTO));
+        assertEquals(BIRTHDATE_PAST_ERROR_MESSAGE, exception.getMessage());
+    }
+
+    @Test
+    public void testRegisterUser_UsernameAlreadyExist_ShouldThrowException() {
+        UserDTO invalidUserDTO = new UserDTO("Eve", LocalDate.now().minusYears(20), "France", "0606060606", "Female");
+
+        when(userRepository.existsByUsername(invalidUserDTO.getUsername())).thenReturn(true);
+        when(messageExceptionService.getErrorMessage("user.username.existing")).thenReturn(USERNAME_EXISTING_ERROR_MESSAGE);
+
+
+        UsernameAlreadyExistsException exception = assertThrows(UsernameAlreadyExistsException.class, () -> userService.registerUser(invalidUserDTO));
+        assertEquals(USERNAME_EXISTING_ERROR_MESSAGE, exception.getMessage());
     }
 
 
@@ -76,18 +108,18 @@ public class UserServiceTest {
     public void testGetUserById_UserExists_ShouldReturnUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(validUser));
 
-        Optional<User> user = userService.getUserById(1L);
+        Optional<UserResponseDTO> userResponseDTO = userService.getUserById(1L);
 
-        assertTrue(user.isPresent());
-        assertEquals("Alice", user.get().getUsername());
+        assertTrue(userResponseDTO.isPresent());
+        assertEquals("Alice", userResponseDTO.get().getUsername());
     }
 
     @Test
     public void testGetUserById_UserNotExists_ShouldReturnEmpty() {
         when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
-        Optional<User> user = userService.getUserById(2L);
+        Optional<UserResponseDTO> userResponseDTO = userService.getUserById(2L);
 
-        assertFalse(user.isPresent());
+        assertFalse(userResponseDTO.isPresent());
     }
 }
