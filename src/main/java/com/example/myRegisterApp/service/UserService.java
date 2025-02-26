@@ -17,6 +17,10 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 
+/**
+ * Service for handling user-related operations.
+ * Manages user registration and retrieval.
+ */
 @Service
 public class UserService {
 
@@ -26,25 +30,50 @@ public class UserService {
     private final UserRepository userRepository;
     private final MessageExceptionService messageExceptionService;
 
+    /**
+     * Constructor for UserService.
+     *
+     * @param userRepository the repository handling user persistence
+     * @param messageExceptionService the service handling exception messages
+     */
     public UserService(UserRepository userRepository, MessageExceptionService messageExceptionService) {
         this.userRepository = userRepository;
         this.messageExceptionService = messageExceptionService;
     }
 
+    /**
+     * Registers a new user after validation.
+     *
+     * @param userDTO the user data transfer object containing user details
+     * @return UserResponseDTO containing registered user details
+     */
     public UserResponseDTO registerUser(UserDTO userDTO) {
         User user = UserMapper.toEntity(userDTO);
         validateUser(user);
         return UserMapper.toResponseDTO(userRepository.save(user));
     }
 
-
-
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param id the ID of the user
+     * @return an Optional containing the UserResponseDTO if found, otherwise empty
+     */
     public Optional<UserResponseDTO> getUserById(Long id) {
         logger.info("User ID search : {}", id);
         Optional<User> user = userRepository.findById(id);
         return user.map(UserMapper::toResponseDTO);
     }
 
+    /**
+     * Validates a user entity based on predefined business rules.
+     *
+     * @param user the user entity to validate
+     * @throws BirthdateInFutureException if the birthdate is in the future
+     * @throws UnderageUserException if the user is under 18 years old
+     * @throws NonFrenchResidentException if the user is not a resident of France
+     * @throws UsernameAlreadyExistsException if the username already exists
+     */
     private void validateUser(User user) {
         int age = Period.between(user.getBirthdate(), LocalDate.now()).getYears();
         if (user.getBirthdate().isAfter(LocalDate.now())) {

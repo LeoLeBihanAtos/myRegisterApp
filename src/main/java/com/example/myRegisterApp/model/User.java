@@ -6,6 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+
+/**
+ * Entity representing a user in the system.
+ */
 @Entity
 @Data
 @NoArgsConstructor
