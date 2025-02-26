@@ -89,7 +89,7 @@ From there, you can test both the **POST /users/register** and **GET /users/{id}
         "username": "jamespotter",
         "birthdate": "1990-01-01",
         "countryOfResidence": "USA",
-        "phoneNumber": "123-456-7890",
+        "phoneNumber": "+33658595253",
         "gender": "Male"
       }
       ```
@@ -108,7 +108,7 @@ From there, you can test both the **POST /users/register** and **GET /users/{id}
             "username": "jamespotter",
             "birthdate": "1990-01-01",
             "countryOfResidence": "USA",
-            "phoneNumber": "123-456-7890",
+            "phoneNumber": "+33658595253",
             "gender": "Male"
           }
           ```
@@ -134,7 +134,7 @@ The collection includes the following requests:
      "username": "jamespotter",
      "birthdate": "1990-01-01",
      "countryOfResidence": "USA",
-     "phoneNumber": "123-456-7890",
+     "phoneNumber": "+33658595253",
      "gender": "Male"
    }'
    ```
