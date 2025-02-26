@@ -84,11 +84,13 @@ public class GlobalExceptionHandler {
         logger.error("Erreur serveur : {}", ex.getMessage());
 
         HttpStatus status = switch (ex) {
-            case BirthdateInFutureException _, UnderageUserException _ -> HttpStatus.BAD_REQUEST;
-            case NonFrenchResidentException _ -> HttpStatus.FORBIDDEN;
-            case UsernameAlreadyExistsException _ -> HttpStatus.CONFLICT;
+            case BirthdateInFutureException e -> HttpStatus.BAD_REQUEST;
+            case UnderageUserException e -> HttpStatus.BAD_REQUEST;
+            case NonFrenchResidentException e -> HttpStatus.FORBIDDEN;
+            case UsernameAlreadyExistsException e -> HttpStatus.CONFLICT;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
+
         return new ResponseEntity<>(error, status);
     }
 
