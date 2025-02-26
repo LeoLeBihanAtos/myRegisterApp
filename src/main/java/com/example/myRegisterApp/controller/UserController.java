@@ -14,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 /**
  * Controller for managing user-related operations.
@@ -55,7 +58,12 @@ public class UserController {
         logger.info("User registration request for : {}", userDTO.getUsername());
         UserResponseDTO registeredUser = userService.registerUser(userDTO);
         logger.info("User successfully registered : {}", registeredUser.getId());
-        return ResponseEntity.ok(registeredUser);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(registeredUser.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(registeredUser);
     }
 
     /**

@@ -25,7 +25,7 @@ To describe and document the API, Swagger has been integrated into the project, 
 Before you run the project, make sure you have the following installed on your machine:
 
 - **Java 21 or higher**
-- **Maven** (or Docker, if you prefer running with Docker)
+- **Maven**
 - **Docker** (optional, for running with Docker Compose)
 
 ### Running the Application Using Docker Compose
@@ -43,7 +43,7 @@ The easiest way to run this project is using Docker Compose, which will automati
    docker compose up -d
    ```
 
-This will build the Docker image (if not already built) and start the application. The API will be available at [http://localhost:8080](http://localhost:8080).
+This will build the Docker image (if not already built) and start the application. The API will be available at [http://localhost:8080/api](http://localhost:8080/api).
 
 ### Running the Application Using Maven
 
@@ -69,7 +69,7 @@ This will start the application on the default port `8080`.
 
 ## How to Use the API
 
-Once the application is running, you can interact with the API through Swagger or via HTTP requests.
+Once the application is running, you can take a look at Swagger or interact via HTTP requests.
 
 ### Swagger UI
 
@@ -148,5 +148,6 @@ The collection includes the following requests:
 
 This project provides a simple and efficient way to manage user information with a Spring Boot backend and an integrated Swagger UI. The API can be easily run using Docker Compose or Maven, and the Swagger UI provides an intuitive interface for testing the endpoints.
 
-For more information or to contribute to the project, feel free to check the repository or contact the maintainers.
+For more information, feel free to check the repository or contact the maintainers.
 
+   
