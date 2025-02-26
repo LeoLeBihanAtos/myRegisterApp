@@ -1,5 +1,6 @@
 package com.example.myRegisterApp.mapper;
 
+import com.example.myRegisterApp.enums.Gender;
 import com.example.myRegisterApp.model.User;
 import com.example.myRegisterApp.model.dto.UserDTO;
 import com.example.myRegisterApp.model.dto.UserResponseDTO;
@@ -16,14 +17,13 @@ public class UserMapper {
      * @return a User entity
      */
     public static User toEntity(UserDTO userDTO) {
-        return new User(
-                null,
-                userDTO.getUsername(),
-                userDTO.getBirthdate(),
-                userDTO.getCountryOfResidence(),
-                userDTO.getPhoneNumber(),
-                userDTO.getGender()
-        );
+        return User.builder()
+                .username(userDTO.getUsername())
+                .birthdate(userDTO.getBirthdate())
+                .countryOfResidence(userDTO.getCountryOfResidence())
+                .phoneNumber(userDTO.getPhoneNumber())
+                .gender(Gender.valueOf(userDTO.getGender().toUpperCase()))
+                .build();
     }
 
     /**
@@ -33,13 +33,13 @@ public class UserMapper {
      * @return a UserResponseDTO
      */
     public static UserResponseDTO toResponseDTO(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getBirthdate(),
-                user.getCountryOfResidence(),
-                user.getPhoneNumber(),
-                user.getGender()
-        );
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .birthdate(user.getBirthdate())
+                .countryOfResidence(user.getCountryOfResidence())
+                .phoneNumber(user.getPhoneNumber())
+                .gender(user.getGender().toString())
+                .build();
     }
 }

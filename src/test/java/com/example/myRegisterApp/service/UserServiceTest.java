@@ -1,5 +1,6 @@
 package com.example.myRegisterApp.service;
 
+import com.example.myRegisterApp.enums.Gender;
 import com.example.myRegisterApp.exception.BirthdateInFutureException;
 import com.example.myRegisterApp.exception.NonFrenchResidentException;
 import com.example.myRegisterApp.exception.UnderageUserException;
@@ -47,7 +48,7 @@ public class UserServiceTest {
     @BeforeEach
     void setUp() {
         validUserDTO = new UserDTO("Alice", LocalDate.of(2000, 1, 1), "France", "0606060606", "Female");
-        validUser = new User(null, "Alice", LocalDate.of(2000, 1, 1), "France", "0606060606", "Female");
+        validUser = new User(null, "Alice", LocalDate.of(2000, 1, 1), "France", "0606060606", Gender.FEMALE);
 
     }
 

@@ -1,7 +1,9 @@
 package com.example.myRegisterApp.model;
 
+import com.example.myRegisterApp.enums.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +13,7 @@ import java.time.LocalDate;
  * Entity representing a user in the system.
  */
 @Entity
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,5 +29,5 @@ public class User {
     private LocalDate birthdate;
     private String countryOfResidence;
     private String phoneNumber;
-    private String gender;
+    private Gender gender;
 }
