@@ -24,7 +24,7 @@ import jakarta.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class UserDTO {
 
-    @Schema(description = "User's username", example = "johndoe")
+    @Schema(description = "User's username", example = "jamespotter")
     @NotBlank(message = "Username is required")
     @Size(min = 2, max = 20, message = "Username must be between 2 and 20 characters")
     private String username;
